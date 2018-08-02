@@ -9,6 +9,8 @@ const constraints = { audio: {
   },
 } };
 
+const GAIN_THRESHOLD = 0.03;
+
 async function getUserMedia() {
   if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
     try {
@@ -23,40 +25,48 @@ async function getUserMedia() {
 }
 
 export default class Recorder extends EventEmitter {
-  constructor(bufferSize = 2048) {
+  constructor() {
     super();
-    this.audioContext = new AudioContext();
+    this.isReady = false;
+    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
     this.analyser = this.audioContext.createAnalyser();
-    this.scriptProcessor = this.audioContext.createScriptProcessor(bufferSize, 1, 1);
     this.initializeMediaStream();
   }
 
   initializeMediaStream = async () => {
-    try {
-      const userMediaStream = await getUserMedia();
-      this.emit('ready', userMediaStream);
-      this.audioContext.createMediaStreamSource(userMediaStream).connect(this.analyser);
-      this.analyser.connect(this.scriptProcessor);
-      this.scriptProcessor.connect(this.audioContext.destination);
-    } catch (error) {
-      console.trace();
+    const userMediaStream = await getUserMedia();
+    if (!userMediaStream) {
+      return;
     }
+    this.audioContext.createMediaStreamSource(userMediaStream).connect(this.analyser);
+    this.analyser.fftSize = 4096;
+    this.isReady = true;
+    this.emit('ready', userMediaStream);
   }
 
-  handleAudioEvent = (event) => {
+  handleAudioEvent = () => {
     if (this.listenerCount('data') > 0) {
-      const audioBuffer = event.inputBuffer.getChannelData(0);
-      this.emit('data', audioBuffer);
+      const dataArray = new Float32Array(this.analyser.frequencyBinCount);
+      // Can we use the frequency data for a more accurate guess?
+      // this.analyser.getFloatFrequencyData(dataArray);
+      this.analyser.getFloatTimeDomainData(dataArray);
+      const max = Math.max(...dataArray);
+      if (max > GAIN_THRESHOLD) {
+        this.emit('data', dataArray);
+      }
     }
   }
 
   start() {
-    this.scriptProcessor.addEventListener('audioprocess', this.handleAudioEvent);
+    if (!this.isReady) {
+      console.warn('Recorder is not ready to record');
+    }
+    this.audioInputInterval = setInterval(this.handleAudioEvent, 200);
     this.emit('start');
   }
 
   stop() {
-    this.scriptProcessor.removeEventListener('audioprocess', this.handleAudioEvent);
+    clearInterval(this.audioInputInterval);
     this.emit('stop');
   }
 }

@@ -1,4 +1,5 @@
 import PitchFinder from 'pitchfinder';
+import { EventEmitter } from 'events';
 import Recorder from './recorder';
 
 const allNotes = ['C', 'C♯', 'D', 'D♯', 'E', 'F', 'F♯', 'G', 'G♯', 'A', 'A♯', 'B'];
@@ -22,29 +23,46 @@ function getCents(frequency, note) {
   return Math.floor(1200 * Math.log(frequency / getStandardFrequency(note)) / Math.log(2));
 }
 
-export default class Tuner {
-  constructor(sampleRate = 22050, bufferSize = 2048) {
-    this.pitchFinder = new PitchFinder.YIN({ sampleRate });
+export default class Tuner extends EventEmitter {
+  constructor() {
+    super();
     this.isRecorderReady = false;
-    this.recorder = new Recorder(bufferSize);
-    this.recorder.on('ready', this.onReady);
+    this.isRunning = false;
+    this.pitchFinder = new PitchFinder.AMDF();
+    this.recorder = new Recorder();
+
+    this.recorder.on('ready', () => {
+      this.isRecorderReady = true;
+    });
+
+    this.recorder.on('start', () => {
+      this.isRunning = true;
+    });
+
+    this.recorder.on('stop', () => {
+      this.isRunning = false;
+    });
   }
 
-  onReady = (recorder) => {
-    console.log("we ready!!", recorder);
-    this.isRecorderReady = true;
-  }
-
-  isReady() {
+  get ready() {
     return this.isRecorderReady;
   }
 
+  get running() {
+    return this.isRunning;
+  }
+
   start() {
-    this.recorder.on('data', data => {
+    if (!this.isRecorderReady) {
+      console.warn('Tuner is yet ready to start');
+      return false;
+    }
+
+    this.recorder.on('data', (data) => {
       const frequency = this.pitchFinder(data);
-      if (frequency && this.onNoteDetected) {
+      if (frequency && this.listenerCount('note')) {
         const note = getNote(frequency);
-        this.onNoteDetected({
+        this.emit('note', {
           name: allNotes[note % 12],
           value: note,
           cents: getCents(frequency, note),
@@ -53,10 +71,17 @@ export default class Tuner {
         });
       }
     });
+
     this.recorder.start();
+    return true;
   }
 
   stop() {
+    if (!this.isRunning) {
+      console.warn('Trying to stop tuner, but it isn\'t running');
+      return false;
+    }
     this.recorder.stop();
+    return true;
   }
 }

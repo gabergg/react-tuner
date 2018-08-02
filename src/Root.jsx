@@ -23,13 +23,13 @@ class Root extends React.Component {
   }
 
   componentDidMount() {
-    this.tuner.onNoteDetected = note => {
+    this.tuner.on('note', (note) => {
       if (this.lastNoteName === note.name) {
         this.setState({ note });
       } else {
         this.lastNoteName = note.name;
       }
-    };
+    });
   }
 
   componentDidUpdate(prevProps, prevState) {
