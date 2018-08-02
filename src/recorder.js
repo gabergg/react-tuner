@@ -9,8 +9,6 @@ const constraints = { audio: {
   },
 } };
 
-const GAIN_THRESHOLD = 0.03;
-
 async function getUserMedia() {
   if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
     try {
@@ -24,11 +22,21 @@ async function getUserMedia() {
   return null;
 }
 
+const defaultConfig = {
+  gainThreshold: 0.03,
+  analyserFFTSize: 4096,
+  audioPollInterval: 100,
+};
+
 export default class Recorder extends EventEmitter {
-  constructor() {
+  constructor(ctx, config) {
     super();
+    this.config = {
+      ...defaultConfig,
+      ...config,
+    };
     this.isReady = false;
-    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    this.audioContext = ctx || new (window.AudioContext || window.webkitAudioContext)();
     this.analyser = this.audioContext.createAnalyser();
     this.initializeMediaStream();
   }
@@ -36,12 +44,14 @@ export default class Recorder extends EventEmitter {
   initializeMediaStream = async () => {
     const userMediaStream = await getUserMedia();
     if (!userMediaStream) {
-      return;
+      return false;
     }
-    this.audioContext.createMediaStreamSource(userMediaStream).connect(this.analyser);
-    this.analyser.fftSize = 4096;
+    this.audioSource = this.audioContext.createMediaStreamSource(userMediaStream);
+    this.audioSource.connect(this.analyser);
+    this.analyser.fftSize = this.config.analyserFFTSize;
     this.isReady = true;
     this.emit('ready', userMediaStream);
+    return true;
   }
 
   handleAudioEvent = () => {
@@ -51,7 +61,7 @@ export default class Recorder extends EventEmitter {
       // this.analyser.getFloatFrequencyData(dataArray);
       this.analyser.getFloatTimeDomainData(dataArray);
       const max = Math.max(...dataArray);
-      if (max > GAIN_THRESHOLD) {
+      if (max > this.config.gainThreshold) {
         this.emit('data', dataArray);
       }
     }
@@ -61,12 +71,19 @@ export default class Recorder extends EventEmitter {
     if (!this.isReady) {
       console.warn('Recorder is not ready to record');
     }
-    this.audioInputInterval = setInterval(this.handleAudioEvent, 200);
+    this.audioInputInterval = setInterval(this.handleAudioEvent, this.config.audioPollInterval);
     this.emit('start');
   }
 
   stop() {
     clearInterval(this.audioInputInterval);
     this.emit('stop');
+  }
+
+  teardown() {
+    this.stop();
+    if (this.audioSource) {
+      this.audioSource.disconnect();
+    }
   }
 }

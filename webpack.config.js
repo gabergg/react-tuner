@@ -20,6 +20,8 @@ module.exports = (env = {}) => {
       filename: 'bundle.js',
       path: paths.dist,
       publicPath: '/',
+      // globalObject necessary for attempted global access that hot reloading does w/ web workers
+      globalObject: 'this',
     },
     context: paths.src,
     module: {
@@ -41,6 +43,13 @@ module.exports = (env = {}) => {
           use: [
             'style-loader',
             'css-loader',
+          ],
+        },
+        {
+          test: /\.worker\.js$/,
+          use: [
+            'worker-loader',
+            'babel-loader',
           ],
         },
       ],

@@ -84,4 +84,8 @@ export default class Tuner extends EventEmitter {
     this.recorder.stop();
     return true;
   }
+
+  teardown() {
+    this.recorder.teardown();
+  }
 }

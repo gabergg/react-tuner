@@ -6,6 +6,9 @@ import Tuner from './tuner';
 import Note from './Note';
 import Meter from './Meter';
 
+// import Tuner from './tuner.worker';
+// import RecorderWorker from 'worker-loader!./recorder.worker.js';
+
 class Root extends React.Component {
   constructor(props) {
     super(props);
@@ -23,6 +26,7 @@ class Root extends React.Component {
   }
 
   componentDidMount() {
+    // this.tuner.addEventListener('message', (msg) => console.log('Main received', msg));
     this.tuner.on('note', (note) => {
       if (this.lastNoteName === note.name) {
         this.setState({ note });
@@ -30,6 +34,14 @@ class Root extends React.Component {
         this.lastNoteName = note.name;
       }
     });
+
+    // console.log(RecorderWorker);
+    // const lol = new RecorderWorker();
+    // console.log('lol :', lol);
+    // lol.postMessage('hehe');
+    // lol.onmessage = console.log;
+    // lol.addEventListener('message', console.log);
+    // lol.onmessage((msg) => console.log(msg));
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -41,6 +53,10 @@ class Root extends React.Component {
     }
   }
 
+  componentWillUnmount() {
+    this.tuner.teardown();
+  }
+
   toggleRecording = () => {
     this.setState({ isRecording: !this.state.isRecording });
   }
@@ -48,8 +64,6 @@ class Root extends React.Component {
   render() {
     const { isRecording } = this.state;
     const { styles } = this.props;
-
-    console.log(isRecording);
 
     return (
       <div {...css(styles.container)}>

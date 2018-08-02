@@ -19,7 +19,6 @@ const strongStyle = {
 
 class Scales extends React.PureComponent {
   render() {
-    console.log('the boy is rendering');
     const { styles } = this.props;
 
     const scales = [];
@@ -50,8 +49,6 @@ class Meter extends React.PureComponent {
     const pointerStyle = {
       transform: `rotate(${centDegrees}deg)`,
     };
-
-    console.log(cents, centDegrees);
 
     return (
       <div {...css(styles.meter)}>
