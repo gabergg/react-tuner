@@ -1,12 +1,13 @@
 {
   "name": "react-tuner",
-  "version": "1.0.0-alpha.0",
+  "version": "1.0.0-alpha.1",
   "description": "",
   "main": "build/index.js",
   "scripts": {
     "prebuild": "yarn run clean",
     "build": "webpack",
-    "clean": "rimraf dist",
+    "build:watch": "yarn run build -- --watch",
+    "clean": "rimraf build",
     "dev": "webpack-dev-server --env.dev",
     "lint": "eslint src"
   },
@@ -35,6 +36,9 @@
     "eslint-plugin-import": "^2.13.0",
     "eslint-plugin-jsx-a11y": "^6.1.0",
     "eslint-plugin-react": "^7.10.0",
+    "prop-types": "^15.6.2",
+    "react": "^16.4.1",
+    "react-dom": "^16.4.1",
     "rimraf": "^2.6.2",
     "style-loader": "^0.21.0",
     "webpack": "^4.0.0",
@@ -46,11 +50,13 @@
     "aphrodite": "^2.2.2",
     "events": "^3.0.0",
     "pitchfinder": "^2.0.9",
-    "prop-types": "^15.6.2",
-    "react": "^16.4.1",
-    "react-dom": "^16.4.1",
     "react-hot-loader": "^4.3.4",
     "react-with-styles": "^3.2.1",
     "react-with-styles-interface-aphrodite": "^5.0.0"
+  },
+  "peerDependencies": {
+    "prop-types": "^15.6.2",
+    "react": "^16.4.1",
+    "react-dom": "^16.4.1"
   }
 }

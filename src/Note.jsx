@@ -1,16 +1,21 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { css, withStyles, withStylesPropTypes } from 'with-styles';
+import themeColors from './theme/color';
 
 class Note extends React.PureComponent {
   render() {
-    const { name, octave, styles } = this.props;
+    const { name, noteColor, octave, styles } = this.props;
+
+    const colorStyle = {
+      color: noteColor,
+    };
 
     return (
       <div {...css(styles.note)}>
-        <span {...css(styles.name)}>{name[0]}</span>
-        <span {...css(styles.nameSuffix)}>{name[1]}</span>
-        <span {...css(styles.nameSuffix)}>{octave}</span>
+        <span {...css(styles.name, colorStyle)}>{name[0]}</span>
+        <span {...css(styles.nameSuffix, colorStyle)}>{name[1]}</span>
+        <span {...css(styles.nameSuffix, colorStyle)}>{octave}</span>
       </div>
     );
   }
@@ -20,22 +25,26 @@ Note.propTypes = {
   ...withStylesPropTypes,
   name: PropTypes.string.isRequired,
   octave: PropTypes.number.isRequired,
+  noteColor: PropTypes.string,
 };
 
-export default withStyles(({ color, unit }) => ({
+Note.defaultProps = {
+  noteColor: themeColors.note,
+};
+
+export default withStyles(({ unit }) => ({
   note: {
-    width: 110,
-    height: 146,
-    marginBottom: 10,
+    flex: 1,
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: unit * 3,
   },
   name: {
     fontSize: unit * 16,
     fontWeight: '600',
-    color: color.note,
-    flexDirection: 'row',
   },
   nameSuffix: {
     fontSize: unit * 4,
-    color: color.note,
   },
 }))(Note);

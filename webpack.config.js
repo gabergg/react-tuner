@@ -4,6 +4,7 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 const paths = {
   dist: resolve(__dirname, 'dist'),
+  build: resolve(__dirname, 'build'),
   src: resolve(__dirname, 'src'),
   static: resolve(__dirname, 'static'),
 };
@@ -12,17 +13,10 @@ module.exports = (env = {}) => {
   const { dev } = env;
 
   const copyPlugin = new CopyWebpackPlugin([
-    { from: paths.static, to: paths.dist },
+    { from: paths.static, to: paths.build },
   ]);
 
   const base = {
-    output: {
-      filename: 'bundle.js',
-      path: paths.dist,
-      publicPath: '/',
-      // globalObject necessary for attempted global access that hot reloading does w/ web workers
-      globalObject: 'this',
-    },
     context: paths.src,
     module: {
       rules: [
@@ -45,13 +39,13 @@ module.exports = (env = {}) => {
             'css-loader',
           ],
         },
-        {
-          test: /\.worker\.js$/,
-          use: [
-            'worker-loader',
-            'babel-loader',
-          ],
-        },
+        // {
+        //   test: /\.worker\.js$/,
+        //   use: [
+        //     'worker-loader',
+        //     'babel-loader',
+        //   ],
+        // },
       ],
     },
     resolve: {
@@ -67,8 +61,15 @@ module.exports = (env = {}) => {
     entry: [
       'webpack-dev-server/client?http://localhost:3210',
       'webpack/hot/only-dev-server',
-      './index.js',
+      './index.dev.js',
     ],
+    output: {
+      filename: 'bundle.js',
+      path: paths.dist,
+      publicPath: '/',
+      // globalObject necessary for attempted global access that hot reloading does w/ web workers
+      globalObject: 'this',
+    },
     devServer: {
       hot: true,
       contentBase: paths.dist,
@@ -92,8 +93,14 @@ module.exports = (env = {}) => {
 
   const prodConfig = {
     entry: [
-      './index.js',
+      './index.prod.js',
     ],
+    output: {
+      filename: 'index.js',
+      path: paths.build,
+      library: 'react-tuner',
+      libraryTarget: 'commonjs2',
+    },
     plugins: [
       copyPlugin,
       new webpack.DefinePlugin({
