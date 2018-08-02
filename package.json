@@ -9,7 +9,8 @@
     "build:watch": "yarn run build -- --watch",
     "clean": "rimraf build",
     "dev": "webpack-dev-server --env.dev",
-    "lint": "eslint src"
+    "lint": "eslint src",
+    "prepublish": "yarn run build"
   },
   "repository": {
     "type": "git",
