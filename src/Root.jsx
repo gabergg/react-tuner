@@ -57,7 +57,7 @@ class Root extends React.Component {
 
   render() {
     const { isRecording } = this.state;
-    const { styles, extraStyles, Toggle } = this.props;
+    const { styles, extraStyles, showFrequency, Toggle } = this.props;
     const {
       frequencyColor = themeColors.frequency,
       noteColor,
@@ -80,11 +80,13 @@ class Root extends React.Component {
           scaleColor={scaleColor}
         />
         <Note {...this.state.note} noteColor={noteColor} />
-        <div {...css(styles.frequencyContainer)}>
-          <span {...css(styles.frequency, frequencyColor && { color: frequencyColor })}>
-            {`${this.state.note.frequency.toFixed(1)} Hz`}
-          </span>
-        </div>
+        { showFrequency && (
+          <div {...css(styles.frequencyContainer)}>
+            <span {...css(styles.frequency, frequencyColor && { color: frequencyColor })}>
+              {`${this.state.note.frequency.toFixed(1)} Hz`}
+            </span>
+          </div>
+        )}
       </div>
     );
   }
@@ -93,11 +95,13 @@ class Root extends React.Component {
 Root.propTypes = {
   ...withStylesPropTypes,
   extraStyles: PropTypes.object,
+  showFrequency: PropTypes.bool,
   Toggle: PropTypes.node,
 };
 
 Root.defaultProps = {
   extraStyles: {},
+  showFrequency: false,
   Toggle: null,
 };
 

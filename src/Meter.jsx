@@ -17,6 +17,8 @@ const strongStyle = {
   borderTopWidth: 20,
 };
 
+const METER_SPREAD = 45; // degrees
+
 class Scales extends React.PureComponent {
   render() {
     const { scaleColor, styles } = this.props;
@@ -27,7 +29,7 @@ class Scales extends React.PureComponent {
 
     const scales = [];
     for (let i = 0; i < 11; i++) {
-      const rotationStyle = { transform: `rotate(${i * 9 - 45}deg)` };
+      const rotationStyle = { transform: `rotate(${i * 9 - METER_SPREAD}deg)` };
       scales.push(
         <div
           key={i}
@@ -54,7 +56,7 @@ class Meter extends React.PureComponent {
   render() {
     const { cents, pointerColor, scaleColor, styles } = this.props;
 
-    const centDegrees = cents * 45 / 50;
+    const centDegrees = cents * METER_SPREAD / 50;
 
     const pointerStyle = {
       transform: `rotate(${centDegrees}deg)`,

@@ -23,9 +23,9 @@ async function getUserMedia() {
 }
 
 const defaultConfig = {
-  gainThreshold: 0.03,
+  gainThreshold: 0.01,
   analyserFFTSize: 4096,
-  audioPollInterval: 100,
+  audioPollInterval: 50,
 };
 
 export default class Recorder extends EventEmitter {

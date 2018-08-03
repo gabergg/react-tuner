@@ -14,8 +14,10 @@ class Note extends React.PureComponent {
     return (
       <div {...css(styles.note)}>
         <span {...css(styles.name, colorStyle)}>{name[0]}</span>
-        <span {...css(styles.nameSuffix, colorStyle)}>{name[1]}</span>
-        <span {...css(styles.nameSuffix, colorStyle)}>{octave}</span>
+        <div {...css(styles.suffixContainer)}>
+          <span {...css(styles.nameSuffix, colorStyle)}>{name[1]}</span>
+          <span {...css(styles.nameSuffix, colorStyle)}>{octave}</span>
+        </div>
       </div>
     );
   }
@@ -37,12 +39,16 @@ export default withStyles(({ unit }) => ({
     flex: 1,
     display: 'flex',
     justifyContent: 'center',
-    alignItems: 'center',
     marginTop: unit * 3,
   },
   name: {
     fontSize: unit * 16,
     fontWeight: '600',
+  },
+  suffixContainer: {
+    display: 'flex',
+    alignItems: 'flex-end',
+    marginBottom: 10,
   },
   nameSuffix: {
     fontSize: unit * 4,
